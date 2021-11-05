@@ -143,14 +143,19 @@ class ANCERetrieval(TransformerBase):
         args.per_gpu_eval_batch_size = 128
         args.device = torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu")
         args.n_gpu = torch.cuda.device_count()
-        
-        self.checkpoint_path = checkpoint_path
         self.num_results = num_results
         from pyterrier import tqdm
 
         #faiss.omp_set_num_threads(16)
         
-        config, tokenizer, model = _load_model(self.args, self.checkpoint_path)
+        if isinstance(checkpoint_path, str):
+            self.checkpoint_path = checkpoint_path
+            config, tokenizer, model = _load_model(self.args, self.checkpoint_path)
+        elif isinstance(checkpoint_path, tuple):
+            model = checkpoint_path[0]
+            tokenizer = checkpoint_path[1]
+        else:
+            raise ValueError("unknown type for checkpoint_path: %s, expected string or tuple" % type(checkpoint_path))
         self.model = model
         self.tokenizer = tokenizer
         if index_path is not None:
