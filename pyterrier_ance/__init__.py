@@ -480,12 +480,12 @@ class PRF_VectorAverage(pt.transformer.TransformerBase):
 
             if self.prf_type == "vector_prf":
                 "vector-prf method: new_emb = AVg(Qemb, prf1_emb, prf2_emb, prf3_emb)"
-                all_embs = np.vstack(group.iloc[0].query_emb,group.head(3).doc_emb)
-                new_q_emb = np.mean(np.vstack([q_emb,prf_embs]), axis = 0)
+                all_embs = np.vstack((np.array(group.iloc[0].query_emb),np.stack(group.head(self.k).doc_emb)))
+                new_q_emb = np.mean(all_embs, axis = 0)
                 
             elif self.prf_type =='rocchio_prf':
                 q_emb = np.array(group.iloc[0].query_emb)
-                prf_embs = np.vstack(group.head(3).doc_emb)
+                prf_embs = np.vstack(group.head(self.k).doc_emb)
                 "rocchio-prf method: new_emb = alpha*Qemb + beta*(Avg(prf1_emb,prf2_emb, prf3_emb)"
                 weighted_mean_prf_embs = self.beta * np.mean(prf_embs,  axis = 0)
                 weighted_query_emb = self.alpha * q_emb
